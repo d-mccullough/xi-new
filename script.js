@@ -16,7 +16,9 @@
   });
   const menuButton = document.querySelector('.menu-toggle');
   const mobileNav = document.querySelector('#mobile-nav');
+  const menuBackground = [...document.querySelectorAll('main, footer, .header > .logo')];
   function closeMenu(restoreFocus = false) {
+    menuBackground.forEach(el => { el.inert = false; });
     menuButton.setAttribute('aria-expanded', 'false');
     menuButton.setAttribute('aria-label', 'Open navigation');
     mobileNav.hidden = true;
@@ -29,10 +31,16 @@
     menuButton.setAttribute('aria-label', open ? 'Close navigation' : 'Open navigation');
     mobileNav.hidden = !open;
     document.body.classList.toggle('menu-open', open);
+    menuBackground.forEach(el => { el.inert = open; });
     if (open) mobileNav.querySelector('a').focus();
   });
-  mobileNav.querySelectorAll('a').forEach(link => link.addEventListener('click', () => closeMenu()));
-  const desktopMedia = matchMedia('(min-width: 801px)');
+  mobileNav.querySelectorAll('a').forEach(link => link.addEventListener('click', () => {
+    closeMenu();
+    const href = link.getAttribute('href');
+    const target = href.startsWith('#') ? document.querySelector(href) : null;
+    if (target) { target.setAttribute('tabindex', '-1'); target.focus({ preventScroll: true }); }
+  }));
+  const desktopMedia = matchMedia('(min-width: 1001px)');
   desktopMedia.addEventListener('change', e => { if (e.matches) closeMenu(); });
   const dropdown = document.querySelector('.nav-dropdown');
   const dropdownButton = dropdown.querySelector('button');
@@ -64,6 +72,10 @@
     document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
     root.classList.add('motion-ready');
   }
+  const services = [...document.querySelectorAll('.service-list details')];
+  services.forEach(item => item.addEventListener('toggle', () => {
+    if (item.open) services.forEach(other => { if (other !== item) other.open = false; });
+  }));
   document.querySelectorAll('[data-filter]').forEach(button => {
     button.addEventListener('click', () => {
       document.querySelectorAll('[data-filter]').forEach(other => {
